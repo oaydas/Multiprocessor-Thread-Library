@@ -79,12 +79,10 @@ void cpu::guard_release() {
  *
  */
 void cpu::ipi_handler() {
-    // printf("\t\t\t\t(IPI ISR): cpu<%d> woken by an IPI, it will begin process\n", cpu::self()->cpu_id);
     cpu::interrupt_disable();
     cpu::guard_acquire();
     
     if (!cpu::ready_threads.empty()) {
-    //     cpu::self()->suspended = false;
         auto prev = cpu::self()->curr_thread;
         cpu::self()->curr_thread = cpu::ready_threads.front();
         cpu::ready_threads.pop();
@@ -92,21 +90,7 @@ void cpu::ipi_handler() {
         assert(cpu::self()->curr_thread->status == Status::READY);
         cpu::self()->curr_thread->status = Status::RUNNING;
         swapcontext(prev->uc.get(), cpu::self()->curr_thread->uc.get());
-    } else {
-        // printf("\t\t\t\t(IPI ISR): cpu<%d> failed to find a ready thread, going back to sleep\n", cpu::self()->cpu_id);
     }
-        // cpu::self()->curr_thread = cpu::ready_threads.front();
-    //     cpu::ready_threads.pop();
-        
-    //     // printf("\t\t\t\t(IPI ISR): cpu<%d> popping thread<%d> from the ready queue\n", cpu::self()->cpu_id, cpu::self()->curr_thread->id);
-    //     // printf("\t\t\t\t(IPI ISR): cpu<%d> now running thread<%d>\n", cpu::self()->cpu_id, cpu::self()->curr_thread->id);
-        
-    //     cpu::self()->curr_thread->status = Status::RUNNING;
-    //     setcontext(cpu::self()->curr_thread->uc.get());
-    // } else {
-    //     // printf("\t\t\t\t(IPI ISR): cpu<%d> have no threads available to run, suspending cpu<%d>\n", cpu::self()->cpu_id, cpu::self()->cpu_id);
-    //     cpu::suspend_cpu();
-    // }
 } // cpu::ipi_handler()
 
 /*
@@ -151,37 +135,14 @@ void cpu::suspend_cpu() {
         cpu::self()->curr_thread = cpu::self()->suspended_thread;
         setcontext(cpu::self()->curr_thread->uc.get());
     }
-    // // if (!cpu::self()->suspended) {
-    //     auto suspend_ctx = std::make_shared<TCB>();
-    //     makecontext(suspend_ctx->uc.get(), 
-    //                 suspend_ctx->stk.get(), 
-    //                 STACK_SIZE, 
-    //                 reinterpret_cast<void(*)()>(cpu::suspend_helper),
-    //                 0);
-    
-    //     if (cpu::self()->curr_thread) {
-    //         swapcontext(cpu::self()->curr_thread->uc.get(), suspend_ctx->uc.get());
-    //     }
-    //     else {
-    //         // printf("\t\t\t\t(SUSPEND): Setting context to the suspend_ctx\n");
-    //         setcontext(suspend_ctx->uc.get());
-    //     }
 } // cpu::suspend_cpu()
 
 void cpu::suspend_helper() {
     while (true) {
         assert_interrupts_disabled();
-        // assert(cpu::guard == true);
         
-        // if (cpu::self()->curr_thread) {   
-        //     // printf("\t\t\t\t(KERNEL): cpu<%d> have no threads available to run, suspending cpu<%d> with thread<%d> \n", cpu::self()->cpu_id, cpu::self()->cpu_id, cpu::self()->curr_thread->id);
-        // }
-        
-        // cpu::self()->curr_thread = nullptr;
         sleeping_cpus.push(cpu::self());
-    
-        // cpu::self()->suspended = true;
-        
+
         cpu::guard_release();
         cpu::interrupt_enable_suspend();
     }
@@ -209,15 +170,6 @@ void cpu::fetch_cpu() {
     
         next_cpu->interrupt_send();
     }
-    //     if (!waiting_cpus.empty()) {
-//         auto next_cpu = waiting_cpus.front();
-//         waiting_cpus.pop();
-
-//         assert(next_cpu != cpu::self() && "self CPU in waiting cpu queue\n");
-
-//         // printf("\t\t\t\t(KERNEL): <cpu %d> waking up CPU %d through an interprocessor interrupt\n", cpu::self()->cpu_tcb->id, next_cpu->cpu_tcb->id);
-//         next_cpu->interrupt_send(); // Send an IPI, will consult the IPI handler and resume CPU
-//     }
 }
 
 /*
@@ -241,9 +193,6 @@ void cpu::fetch_cpu() {
 
         cpu::self()->curr_thread = cpu::ready_threads.front();
         cpu::ready_threads.pop();
-        
-        // printf("\t\t\t\t(KERNEL): cpu<%d> popping thread<%d> from the ready queue\n", cpu::self()->cpu_id, cpu::self()->curr_thread->id);
-        // printf("\t\t\t\t(KERNEL): cpu<%d> now running thread<%d>\n", cpu::self()->cpu_id, cpu::self()->curr_thread->id);
         
         assert(cpu::self()->curr_thread.get());
         cpu::self()->curr_thread->status = Status::RUNNING;
@@ -344,7 +293,6 @@ cpu::cpu(thread_startfunc_t func, uintptr_t arg) {
     cpu_id = num_cpus++;
     // printf("\t\t\t\t(KERNEL): cpu<%d> created in cpu::cpu\n", cpu_id);
     
-    // TODO update the handlers to a valid function when you get to implementing them
     interrupt_vector_table[TIMER]   = cpu::timer_interrupt_handler;
     interrupt_vector_table[IPI]     = cpu::ipi_handler;
 
