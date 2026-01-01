@@ -1,9 +1,5 @@
 /*
  * cv.h -- interface to the CV class
- *
- * You may add new variables and functions to this class.
- *
- * Do not modify any of the given function declarations.
  */
 
 #pragma once
