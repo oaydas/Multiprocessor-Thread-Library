@@ -1,12 +1,5 @@
 /*
  * thread.h -- interface to the thread library
- *
- * This file should be included by the thread library and by application
- * programs that use the thread library.
- * 
- * You may add new variables and functions to this class.
- *
- * Do not modify any of the given function declarations.
  */
 
 #pragma once
