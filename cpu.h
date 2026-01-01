@@ -1,19 +1,5 @@
 /*
  * cpu.h -- interface to the simulated CPU
- *
- * This interface is used mainly by the thread library.
- * The only part that is used by application programs is cpu::boot().
- *
- * This class is implemented almost entirely by the infrastructure.  The
- * responsibilities of the thread library are to implement the cpu constructor
- * (and any functions you choose to add) and manage interrupt_vector_table
- * (and any variables you choose to add).
- *
- * You may add new variables and functions to this class.  If you add variables
- * to the cpu class, add them at the *end* of the class definition, and do not
- * exceed the 2 KB total size limit for the class.
- *
- * Do not modify any of the given variable and function declarations.
  */
 
 #pragma once
@@ -195,20 +181,10 @@ public:
      * On success, cpu::cpu() should not return to the caller.
      */
     cpu(thread_startfunc_t func, uintptr_t arg);
-
-    /************************************************************
-    * Add any variables you want here (do not add them above   *
-    * interrupt_vector_table).  Do not exceed the 2 KB size    *
-    * limit for this class.  Do not add any private variables. *
-    *                                                          *
-    * Warning: unique_ptr may not pass the is_standard_layout  *
-    * assertion on all compilers; use shared_ptr instead.      *
-    ************************************************************/
     
     static void guard_acquire(); // acquires cpu guard
     static void guard_release(); // releases gpu guard
 
-    // TODO
     static void ipi_handler(); 
 
     /*
